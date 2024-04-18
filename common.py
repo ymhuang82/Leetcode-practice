@@ -1,6 +1,12 @@
 from copy import deepcopy
-
-def run_tests(questions: list, answers: list, Solution: object, method_name: str, copy: bool=True):
+from typing import Union
+def run_tests(
+    questions: list, 
+    answers: list, 
+    Solution: object, 
+    method_name: Union[str, None]=None, 
+    copy: bool=True
+):
     """Run test cases to validate the correctness of a given solution method.
 
     Parameters
@@ -11,11 +17,19 @@ def run_tests(questions: list, answers: list, Solution: object, method_name: str
         A list of expected answers corresponding to each question.
     Solution : object
         The class containing the solution methods.
-    method_name : str
-        The name of the method to be tested.
+    method_name : Union[str, None], optional
+        The name of the method to be tested. If not provided, the function
+        automatically finds callable method names in the Solution class. If
+        there are more than two, an error will be raised. Default is None.
     copy : bool, optional
         Whether to create a deep copy of input objects to prevent modification.
-        Defaults to True.
+        Default is True.
+
+    Raises
+    ------
+    ValueError
+        If method_name is not provided and there are more than two callable
+        method names in the Solution class.
 
     Notes
     -----
@@ -24,6 +38,14 @@ def run_tests(questions: list, answers: list, Solution: object, method_name: str
         the option to make copies. For complex objects like nested lists, a
         shallow copy may not be sufficient, so we use deepcopy.
     """
+    if method_name is None:
+        callable_method = [x for x, y in Solution.__dict__.items() if callable(y)]
+        if len(callable_method) != 1:
+            raise ValueError("Method name not provided, and multiple callable "
+                             "methods found in the Solution class. " 
+                             "Please specify the method_name parameter.")
+        method_name = callable_method[0]
+
     if copy:
         questions, answers = deepcopy([questions, answers])
 
@@ -35,3 +57,4 @@ def run_tests(questions: list, answers: list, Solution: object, method_name: str
             print(f'Test Case {i}: Failed! Expected {answer}, Got {result}')
         else:
             print(f'Test Case {i}: Passed!')
+    
