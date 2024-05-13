@@ -1,17 +1,20 @@
 from copy import deepcopy
 from typing import Union
+
+
 def run_tests(
-    questions: list, 
-    answers: list, 
-    Solution: object, 
-    method_name: Union[str, None]=None, 
-    copy: bool=True
+    questions: list[dict],
+    answers: list,
+    Solution: object,
+    inplace_modification: Union[list[dict], None] = None,
+    method_name: Union[str, None] = None,
+    copy: bool = True,
 ):
     """Run test cases to validate the correctness of a given solution method.
 
     Parameters
     ----------
-    questions : list
+    questions : list[dict]
         A list of input questions, each question represented as a dictionary.
     answers : list
         A list of expected answers corresponding to each question.
@@ -41,20 +44,25 @@ def run_tests(
     if method_name is None:
         callable_method = [x for x, y in Solution.__dict__.items() if callable(y)]
         if len(callable_method) != 1:
-            raise ValueError("Method name not provided, and multiple callable "
-                             "methods found in the Solution class. " 
-                             "Please specify the method_name parameter.")
+            raise ValueError(
+                "Method name not provided, and multiple callable "
+                "methods found in the Solution class. "
+                "Please specify the method_name parameter."
+            )
         method_name = callable_method[0]
 
     if copy:
         questions, answers = deepcopy([questions, answers])
 
     for i, (question, answer) in enumerate(zip(questions, answers)):
-        solution_instance  = Solution()
-        method = getattr(solution_instance , method_name)
+        solution_instance = Solution()
+        method = getattr(solution_instance, method_name)
         result = method(**question)
         if result != answer:
-            print(f'Test Case {i}: Failed! Expected {answer}, Got {result}')
+            print(f"Test Case {i}: Failed! Expected {answer}, Got {result}")
+        elif inplace_modification is not None and question != inplace_modification[i]:
+            print(
+                f"Test Case {i}: In-place modification failed! Expected {inplace_modification[i]}, Got {question}"
+            )
         else:
-            print(f'Test Case {i}: Passed!')
-    
+            print(f"Test Case {i}: Passed!")
